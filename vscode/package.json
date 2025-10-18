@@ -15,7 +15,11 @@
     "commands": [
       {
         "command": "rcdbg.helloWorld",
-        "title": "Hello World"
+        "title": "rcdbg: Hello World"
+      },
+      {
+        "command": "rcdbg.fuckWithDebugging",
+        "title": "rcdbg: Fuck With Debugging"
       }
     ]
   },
