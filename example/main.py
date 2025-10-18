@@ -13,11 +13,11 @@ def partition(array, start, end):
         # We also need to make sure we haven't surpassed the low pointer, since that
         # indicates we have already moved all the elements to their correct side of the pivot
         while low <= high and array[high] >= pivot:
-            high = high + 1
+            high = high - 1
 
         # Opposite process of the one above
         while low <= high and array[low] <= pivot:
-            low = low - 1
+            low = low + 1
 
         # We either found a value for both high and low that is out of order
         # or low is higher than high, in which case we exit the loop
@@ -38,8 +38,8 @@ def quick_sort(array, start, end):
         return
 
     p = partition(array, start, end)
-    quick_sort(array, start, p)
-    quick_sort(array, p, end)
+    quick_sort(array, start, p - 1)
+    quick_sort(array, p + 1, end)
 
 
 array = [29,99,27,41,66,28,44,78,87,19,31,76,58,88,83,97,12,21,44]
