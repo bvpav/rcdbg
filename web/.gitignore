@@ -1,0 +1,46 @@
+# Node & dependencies
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Build output
+/build/
+.svelte-kit/
+.vite/
+dist/
+
+# Environment & config
+.env
+.env.*
+!.env.example
+
+# IDEs & editors
+.vscode/
+.idea/
+*.sw?
+*.swo
+*.swn
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Coverage & test output
+coverage/
+*.lcov
+
+# SvelteKit specific cache
+.svelte-kit-output/
+.svelte-kit-temp/
+
+# Misc
+*.local
+*.cache
+

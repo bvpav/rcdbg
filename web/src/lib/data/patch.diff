@@ -1,0 +1,7 @@
+--- a/main.py
++++ b/main.py
+@@
+-    return a / b
+ +    if b == 0:
+ +        raise ValueError("b must be non-zero")
+ +    return a / b

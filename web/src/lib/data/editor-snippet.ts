@@ -1,0 +1,20 @@
+export const editorLines = [
+	{ number: 1, text: 'import logging as log' },
+	{ number: 2, text: '' },
+	{ number: 3, text: 'def calc(a: int, b: int) -> float:' },
+	{ number: 4, text: '    """Compute a divided by b with guardrails."""' },
+	{ number: 5, text: '    log.debug("dividing %s by %s", a, b)' },
+	{ number: 6, text: '    total = a + b' },
+	{ number: 7, text: '    if b == 0:' },
+	{ number: 8, text: '        raise ValueError("b must be non-zero")' },
+	{ number: 9, text: '    return a / b' },
+	{ number: 10, text: '' },
+	{ number: 11, text: 'def main():' },
+	{ number: 12, text: '    jobs = [{"a": 3, "b": 0}, {"a": 10, "b": 2}]' },
+	{ number: 13, text: '    for job in jobs:' },
+	{ number: 14, text: '        result = calc(job["a"], job["b"])' },
+	{ number: 15, text: '        print("result:", result)' },
+	{ number: 16, text: '' },
+	{ number: 17, text: 'if __name__ == "__main__":' },
+	{ number: 18, text: '    main()' }
+];
