@@ -27,7 +27,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: ls && npm install
+        run: cd web && npm install
 
       - name: Build project
         env:
