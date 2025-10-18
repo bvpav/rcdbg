@@ -9,6 +9,15 @@ on:
         required: false
         type: string
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,20 +28,39 @@ jobs:
         
       - name: File stuff
         run: cd web && ls
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          package-manager-cache: false
           node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
 
       - name: Install dependencies
-        run: cd web && npm install
+        working-directory: web
+        run: npm install
 
       - name: Build project
         env:
           NODE_ENV: ${{ inputs.build_env }}
-        run: cd web && npm run build
+        working-directory: web
+        run: npm run build
 
-      - name: List build output
-        run: cd web && ls -R build || ls -R dist || echo "No build folder found"
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact (web/build)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/build
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
