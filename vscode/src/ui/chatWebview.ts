@@ -1,5 +1,5 @@
 export function getChatWebviewContent(): string {
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -15,6 +15,31 @@ export function getChatWebviewContent(): string {
             --rc-text: #f4fbff;
             --rc-muted: rgba(244, 251, 255, 0.6);
         }
+        .bg-circles {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .bg-circles span {
+            position: absolute;
+            width: var(--size, 200px);
+            height: var(--size, 200px);
+            left: var(--x, 50%);
+            top: var(--y, 50%);
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: var(--color, var(--rc-blue));
+            opacity: 0.55;
+            filter: blur(110px);
+            mix-blend-mode: screen;
+            will-change: transform, filter, opacity;
+        }
+
+        /* make the panel sit above the background */
+        .chat-shell { position: relative; z-index: 1; }
         * {
             box-sizing: border-box;
         }
@@ -208,6 +233,23 @@ export function getChatWebviewContent(): string {
     </style>
 </head>
 <body>
+    <div class="bg-circles" aria-hidden="true">
+    <!-- BIG ANCHORS -->
+    <!-- Big green, bottom-left -->
+    <span style="--size: 520px; --x: -8%;  --y: 88%; --color: var(--rc-green);"></span>
+    <!-- Big blue, top-right -->
+    <span style="--size: 520px; --x: 108%; --y: 8%;  --color: var(--rc-blue);"></span>
+
+    <!-- EDGE ACCENTS (smaller, avoiding center) -->
+    <!-- left side, upper third -->
+    <span style="--size: 180px; --x: 8%;   --y: 28%; --color: var(--rc-green);"></span>
+    <!-- right side, lower third -->
+    <span style="--size: 170px; --x: 92%;  --y: 72%; --color: var(--rc-blue);"></span>
+    <!-- near bottom-left edge, tiny highlight -->
+    <span style="--size: 140px; --x: 14%;  --y: 86%; --color: var(--rc-blue);"></span>
+    <!-- near top-right edge, tiny highlight -->
+    <span style="--size: 150px; --x: 84%;  --y: 18%; --color: var(--rc-green);"></span>
+    </div>
     <div class="chat-shell">
         <div class="header" id="header">
             <span>Reality Check · Command Link</span>
