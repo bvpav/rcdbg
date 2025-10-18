@@ -1,26 +1,57 @@
 <script lang="ts">
 	import EditorCanvas from '$components/EditorCanvas.svelte';
 	import RightPanel from '$components/RightPanel.svelte';
-	import type { Step } from '$components/Stepper.svelte';
+	import Stepper, { type Step } from '$components/Stepper.svelte';
+	import ExtensionsCard from '$components/ExtensionsCard.svelte';
 	import type { FrameVar, DebugSnapshot } from '$lib/types/demo';
 
+	/* ---------- State ---------- */
 	let activeLine: number | null = null;
 	let lineVariables: FrameVar[] = [];
 
-	const handleState = (
-		event: CustomEvent<{
-			step: Step;
-			line: number | null;
-			locals: FrameVar[];
-			snapshot: DebugSnapshot;
-		}>
-	) => {
-		activeLine = event.detail.line;
-		lineVariables = [...event.detail.locals];
+	const steps: Step[] = [
+		{ id: 'launch', label: 'Launch', description: 'Extension starts target' },
+		{ id: 'capture', label: 'Capture', description: 'Collect stack & locals' },
+		{ id: 'inject', label: 'Inject', description: 'Context into copilot prompt' },
+		{ id: 'fix', label: 'Fix', description: 'Agent proposes minimal patch' }
+	];
+
+	let activeIndex = 0;
+	let isPlaying = false;
+	let playbackSpeedChoice = '1';
+	$: playbackSpeed = parseFloat(playbackSpeedChoice);
+
+	/* ---------- Handlers ---------- */
+	type StateEvent = {
+		step: Step;
+		line: number | null;
+		locals: FrameVar[];
+		snapshot: DebugSnapshot;
 	};
+
+	function handleState(event: CustomEvent<StateEvent>) {
+		const { step, line, locals } = event.detail;
+		activeLine = line;
+		lineVariables = [...locals];
+		activeIndex = steps.findIndex((s) => s.id === step.id);
+	}
+
+	function handlePlayPause() {
+		isPlaying = !isPlaying;
+	}
+
+	function navigate(offset: number) {
+		activeIndex = Math.min(Math.max(activeIndex + offset, 0), steps.length - 1);
+	}
+
+	function reset() {
+		activeIndex = 0;
+		isPlaying = false;
+	}
 </script>
 
 <main class="page">
+	<!-- Navigation -->
 	<header class="topbar" aria-hidden="true">
 		<div class="topbar__tabs">
 			<div class="topbar__tab topbar__tab--active">Agent Debugger</div>
@@ -36,20 +67,33 @@
 		</div>
 	</header>
 
+	<!-- Hero -->
+	<section class="hero">
+		<h1 class="hero__title">Debug through your AI’s eyes.</h1>
+		<p class="hero__subtitle">
+			Launch, capture, inject, fix. <span>Minimal moves, maximal signal.</span><br />
+			The Agent Debugger extension keeps VS Code’s debugger grounded while your agent proposes the safest patch.
+		</p>
+	</section>
+
+	<!-- Extensions -->
+	<ExtensionsCard />
+
+	<!-- Stepper -->
+	<Stepper {steps} {activeIndex} />
+
+	<!-- Main content -->
 	<section class="grid">
 		<div class="grid__editor">
-			<h1>Debug through your AI’s eyes.</h1>
-			<p class="subtitle">
-				Launch, capture, inject, fix. Minimal moves, maximal signal. The Agent Debugger extension keeps VS Code’s
-				debugger grounded while your agent proposes the safest patch.
-			</p>
 			<EditorCanvas {activeLine} variables={lineVariables} />
 		</div>
+
 		<div class="grid__panel">
 			<RightPanel on:state={handleState} />
 		</div>
 	</section>
 
+	<!-- Footer -->
 	<footer class="status">
 		<div class="status__item" aria-hidden="true">⌘</div>
 		<div class="status__item">Spaces: 4</div>
@@ -58,19 +102,11 @@
 		<div class="status__item status__link">
 			<a href="https://github.com/agent-debugger/agent-debugger/issues">Open issues</a>
 		</div>
-		<div class="status__item status__link">
-			<a
-				href="https://marketplace.visualstudio.com/items?itemName=agent-debugger.extension"
-				target="_blank"
-				rel="noopener"
-			>
-				Marketplace
-			</a>
-		</div>
 	</footer>
 </main>
 
 <style>
+	/* ---------- Layout ---------- */
 	.page {
 		display: flex;
 		flex-direction: column;
@@ -81,6 +117,7 @@
 		margin: 0 auto;
 	}
 
+	/* ---------- Navigation ---------- */
 	.topbar {
 		display: flex;
 		flex-direction: column;
@@ -126,6 +163,63 @@
 		opacity: 0.5;
 	}
 
+	/* ---------- Hero ---------- */
+	.hero {
+		text-align: center;
+		padding: 80px 20px 60px;
+		background: radial-gradient(circle at 50% 0%, rgba(116, 218, 255, 0.15), transparent 70%);
+		position: relative;
+		overflow: hidden;
+	}
+
+	.hero::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(circle at 50% 100%, rgba(52, 238, 137, 0.05), transparent 60%);
+		pointer-events: none;
+	}
+
+	.hero__title {
+		font-size: clamp(40px, 6vw, 72px);
+		font-weight: 800;
+		background: linear-gradient(90deg, #74daff 0%, #34ee89 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		line-height: 1.1;
+		letter-spacing: -0.02em;
+		margin: 0;
+		text-shadow: 0 0 20px rgba(116, 218, 255, 0.25);
+		animation: fadeInSlide 1s ease-out;
+	}
+
+	.hero__subtitle {
+		max-width: 680px;
+		margin: 20px auto 0;
+		font-size: clamp(16px, 1.5vw, 20px);
+		color: var(--muted);
+		line-height: 1.7;
+		font-weight: 400;
+		text-align: center;
+	}
+
+	.hero__subtitle span {
+		color: var(--accent-blue);
+		font-weight: 600;
+	}
+
+	@keyframes fadeInSlide {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	/* ---------- Grid ---------- */
 	.grid {
 		display: grid;
 		grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
@@ -134,31 +228,13 @@
 		flex: 1;
 	}
 
-	.grid__editor {
-		display: flex;
-		flex-direction: column;
-		gap: 20px;
-	}
-
-	h1 {
-		margin: 0;
-		font-size: clamp(28px, 3vw, 40px);
-	}
-
-	.subtitle {
-		margin: 0;
-		font-size: 15px;
-		color: var(--muted);
-		max-width: 540px;
-		line-height: 1.6;
-	}
-
 	.grid__panel {
 		display: flex;
 		flex-direction: column;
 		gap: 18px;
 	}
 
+	/* ---------- Footer ---------- */
 	.status {
 		display: flex;
 		flex-wrap: wrap;
@@ -191,6 +267,7 @@
 		color: var(--accent-blue);
 	}
 
+	/* ---------- Responsive ---------- */
 	@media (max-width: 1024px) {
 		.grid {
 			grid-template-columns: 1fr;

@@ -43,8 +43,11 @@
 					<span class="line-row__number">{entry.number}</span>
 					<div class="line-row__body">
 						<div class="code__text">
-							{@html highlight(entry.text || '&nbsp;')}
-						</div>
+							{#if entry.text}
+								{@html highlight(entry.text)}
+							{:else}
+								&nbsp;
+							{/if}						</div>
 						{#if entry.number === highlightedLine && visibleVariables.length}
 							<ul class="locals" aria-label="Active variables">
 								{#each visibleVariables as local}

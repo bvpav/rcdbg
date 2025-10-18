@@ -162,15 +162,11 @@ $: {
 
 	$: formatReady = activeIndex >= 2;
 	$: fixReady = activeIndex >= 3;
+
+	export { handlePlayPause, goNext, goPrev, reset, playbackSpeedChoice, isPlaying, steps, activeIndex };
 </script>
 
 <section class="right">
-	<ExtensionsCard />
-
-	<div class="stepper-wrap">
-		<Stepper {steps} {activeIndex} />
-	</div>
-
 	<div class="controls" role="group" aria-label="Demo controls">
 		<button type="button" on:click={handlePlayPause}>
 			{isPlaying ? 'Pause' : activeIndex >= steps.length - 1 ? 'Replay' : 'Play'}
@@ -198,14 +194,16 @@ $: {
 
 	<div class="panels">
 		<EventStream lines={displayedLogs} speed={playbackSpeed} />
-		<StateInspector
-			frames={currentFrames}
-			{activeFrameId}
-			showJson={showJson}
-			onToggleJson={() => (showJson = !showJson)}
-		/>
-		<PromptBuilder prompt={prompt} enabled={formatReady} onCopy={copyPrompt} />
+<!--		<StateInspector-->
+<!--				frames={currentFrames}-->
+<!--				{activeFrameId}-->
+<!--				showJson={showJson}-->
+<!--				onToggleJson={() => (showJson = !showJson)}-->
+<!--		/>-->
 		<PatchPreview patch={patch} enabled={fixReady} onCopy={copyDiff} />
+		<div class="prompt-builder">
+			<PromptBuilder prompt={prompt} enabled={formatReady} onCopy={copyPrompt}/>
+		</div>
 	</div>
 </section>
 
@@ -275,6 +273,11 @@ $: {
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: 16px;
+	}
+
+	.panels :global(.prompt-builder) {
+		width: 100%;
+		grid-column: 1 / -1; /* spans all columns when grid is 2-col layout */
 	}
 
 	@media (min-width: 1080px) {
