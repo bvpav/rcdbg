@@ -43,6 +43,28 @@ const typeLine = (line: LogLine) => {
 };
 
   $: {
+    const desiredIds = lines.map((line) => line.id);
+    const desiredSet = new Set(desiredIds);
+    const existingMap = new Map(rendered.map((line) => [line.id, line]));
+    const removed = rendered.some((line) => !desiredSet.has(line.id));
+    const nextRendered: LogLine[] = [];
+
+    for (const id of desiredIds) {
+      const cached = existingMap.get(id);
+      if (cached) {
+        nextRendered.push(cached);
+      }
+    }
+
+    const needsReorder =
+      nextRendered.length === rendered.length &&
+      nextRendered.some((item, idx) => item.id !== rendered[idx]?.id);
+
+    if (removed || needsReorder || nextRendered.length !== rendered.length) {
+      if (removed) clearTimers();
+      rendered = nextRendered;
+    }
+
     const existing = new Set(rendered.map((line) => line.id));
     for (const line of lines) {
       if (!existing.has(line.id)) typeLine(line);
@@ -72,10 +94,12 @@ const typeLine = (line: LogLine) => {
   .stream {
     border: 1px solid var(--border);
     border-radius: 12px;
-    background: rgba(10, 14, 19, 0.9);
+    background: rgba(5, 8, 12, 0.95);
     display: flex;
     flex-direction: column;
-    min-height: 220px;
+    height: 100%;
+    min-height: 0;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.015);
   }
 
   .stream__header {
@@ -94,8 +118,9 @@ const typeLine = (line: LogLine) => {
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
     line-height: 1.6;
-    max-height: 240px;
     overflow-y: auto;
+    flex: 1;
+    min-height: 0;
   }
 
   .stream__placeholder { margin: 0; color: var(--muted); }

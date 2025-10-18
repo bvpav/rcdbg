@@ -2,23 +2,15 @@
 	const steps = [
 		{
 			title: 'Install the extension',
-			body: 'Open the VS Code Extensions tab, search “Agent Debugger”, and install into your active profile.'
+			body: 'Open the VS Code Extensions tab, search “RealityCheck”, install it, and reload once prompted.'
 		},
 		{
-			title: 'Authenticate your agent runtime',
-			body: 'Expose AGENT_DEBUGGER_TOKEN to your orchestrator or hosted agent so each session is signed.'
+			title: 'Link the MCP server',
+			body: 'Add the RealityCheck MCP server to your coding agent so it can request context, prompts, and patches.'
 		},
 		{
-			title: 'Approve workspace bridge',
-			body: 'When prompted in VS Code, allow the extension to read files and stage patches for review.'
-		},
-		{
-			title: 'Start the debug tunnel',
-			body: 'Run `agent-debugger tunnel --project ./` from the workspace root to connect VS Code to your agent.'
-		},
-		{
-			title: 'Hand off control',
-			body: 'Trigger `debug.start` from your agent. The extension streams live stack, locals, and context to the prompt.'
+			title: 'Debug more efficiently',
+			body: 'Use RealityCheck to stream events, inspect prompts, and apply minimal fixes without leaving your editor.'
 		}
 	];
 </script>
@@ -26,10 +18,9 @@
 <main class="page">
 	<header>
 		<p class="eyebrow">QUICKSTART</p>
-		<h1>Five steps to agent-led debugging</h1>
+		<h1>Three steps to RealityCheck readiness</h1>
 		<p class="lede">
-			This guide mirrors the interactive demo. Complete the steps once and you can replay the workflow across
-			projects in under a minute.
+			Run through this short checklist to connect RealityCheck to your coding agent and keep every debugging session grounded.
 		</p>
 	</header>
 
@@ -45,13 +36,6 @@
 		{/each}
 	</ol>
 
-	<section class="next">
-		<p class="eyebrow">Next</p>
-		<p>
-			Read the <a href="/docs">docs overview</a> for API details or follow releases in the
-			<a href="/changelog">changelog</a>.
-		</p>
-	</section>
 </main>
 
 <style>
@@ -125,10 +109,4 @@
 		line-height: 1.55;
 	}
 
-	.next {
-		border: 1px solid var(--border);
-		border-radius: 12px;
-		padding: 18px;
-		background: rgba(10, 14, 19, 0.9);
-	}
 </style>

@@ -3,7 +3,9 @@
 	import RightPanel from '$components/RightPanel.svelte';
 	import Stepper, { type Step } from '$components/Stepper.svelte';
 	import ExtensionsCard from '$components/ExtensionsCard.svelte';
+	import EventStream from '$components/EventStream.svelte';
 	import type { FrameVar, DebugSnapshot } from '$lib/types/demo';
+	import type { LogLine } from '$lib/types/logLine';
 
 	/* ---------- State ---------- */
 	let activeLine: number | null = null;
@@ -20,6 +22,8 @@
 	let isPlaying = false;
 	let playbackSpeedChoice = '1';
 	$: playbackSpeed = parseFloat(playbackSpeedChoice);
+	let streamLines: LogLine[] = [];
+	let streamSpeed = 1;
 
 	/* ---------- Handlers ---------- */
 	type StateEvent = {
@@ -54,7 +58,7 @@
 	<!-- Navigation -->
 	<header class="topbar" aria-hidden="true">
 		<div class="topbar__tabs">
-			<div class="topbar__tab topbar__tab--active">Agent Debugger</div>
+			<div class="topbar__tab topbar__tab--active">RealityCheck</div>
 			<div class="topbar__tab">README</div>
 			<div class="topbar__tab">tests.py</div>
 		</div>
@@ -69,28 +73,48 @@
 
 	<!-- Hero -->
 	<section class="hero">
-		<h1 class="hero__title">Debug through your AI’s eyes.</h1>
+		<h1 class="hero__title">RealityCheck keeps your coding agents grounded.</h1>
 		<p class="hero__subtitle">
-			Launch, capture, inject, fix. <span>Minimal moves, maximal signal.</span><br />
-			The Agent Debugger extension keeps VS Code’s debugger grounded while your agent proposes the safest patch.
+			<span>Debugging tools for the coding agent of your choice</span> that surface context, stream events, and preview patches so you ship with confidence.
 		</p>
+		<div class="hero__cta">
+			<a
+				class="hero__install"
+				href="https://marketplace.visualstudio.com/items?itemName=agent-debugger.extension"
+				target="_blank"
+				rel="noopener"
+			>
+				Install RealityCheck
+			</a>
+		</div>
 	</section>
 
 	<!-- Extensions -->
-	<ExtensionsCard />
+	<section class="extensions">
+		<ExtensionsCard />
+	</section>
 
 	<!-- Stepper -->
-	<Stepper {steps} {activeIndex} />
+	<section class="stepper">
+		<Stepper {steps} {activeIndex} />
+	</section>
 
-	<!-- Main content -->
-	<section class="grid">
-		<div class="grid__editor">
-			<EditorCanvas {activeLine} variables={lineVariables} />
-		</div>
+	<!-- Editor -->
+	<section class="workspace__editor">
+		<EditorCanvas {activeLine} variables={lineVariables} />
+	</section>
 
-		<div class="grid__panel">
-			<RightPanel on:state={handleState} />
-		</div>
+	<!-- Side panel -->
+	<aside class="workspace__panel">
+		<RightPanel
+			on:state={handleState}
+			bind:streamLines
+			bind:streamSpeed />
+	</aside>
+
+	<!-- Event stream -->
+	<section class="workspace__terminal">
+		<EventStream lines={streamLines} speed={streamSpeed} />
 	</section>
 
 	<!-- Footer -->
@@ -98,7 +122,7 @@
 		<div class="status__item" aria-hidden="true">⌘</div>
 		<div class="status__item">Spaces: 4</div>
 		<div class="status__item">UTF-8</div>
-		<div class="status__item status__pill" role="status">Agent Debugger: connected</div>
+		<div class="status__item status__pill" role="status">RealityCheck: connected</div>
 		<div class="status__item status__link">
 			<a href="https://github.com/agent-debugger/agent-debugger/issues">Open issues</a>
 		</div>
@@ -108,13 +132,34 @@
 <style>
 	/* ---------- Layout ---------- */
 	.page {
-		display: flex;
-		flex-direction: column;
+		display: grid;
 		min-height: 100vh;
-		padding: 32px clamp(16px, 4vw, 48px);
-		gap: 28px;
-		max-width: 1200px;
-		margin: 0 auto;
+			padding: 32px clamp(16px, 4vw, 48px);
+			row-gap: 28px;
+			column-gap: 12px;
+			max-width: 1200px;
+			margin: 0 auto;
+			grid-template-columns: minmax(0, 0.9fr) minmax(520px, 1.1fr);
+		grid-template-rows:
+			auto
+			auto
+			auto
+			auto
+			minmax(0, 1fr)
+			minmax(30vh, 40vh)
+			auto;
+		grid-template-areas:
+			"topbar topbar"
+			"hero hero"
+			"extensions extensions"
+			"stepper stepper"
+			"editor side"
+			"terminal terminal"
+			"status status";
+	}
+
+	.topbar {
+		grid-area: topbar;
 	}
 
 	/* ---------- Navigation ---------- */
@@ -165,6 +210,7 @@
 
 	/* ---------- Hero ---------- */
 	.hero {
+		grid-area: hero;
 		text-align: center;
 		padding: 80px 20px 60px;
 		background: radial-gradient(circle at 50% 0%, rgba(116, 218, 255, 0.15), transparent 70%);
@@ -208,6 +254,83 @@
 		font-weight: 600;
 	}
 
+	.hero__cta {
+		margin-top: 32px;
+		display: flex;
+		justify-content: center;
+	}
+
+	.hero__install {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 18px 52px;
+		border-radius: 999px;
+		font-size: 18px;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		color: var(--text);
+		text-decoration: none;
+		border: 1px solid rgba(116, 218, 255, 0.5);
+		background: linear-gradient(135deg, rgba(116, 218, 255, 0.28), rgba(52, 238, 137, 0.22));
+		box-shadow:
+			0 8px 32px rgba(116, 218, 255, 0.35),
+			inset 0 0 18px rgba(52, 238, 137, 0.22);
+		position: relative;
+		overflow: hidden;
+		animation: heroPulse 3s ease-in-out infinite;
+	}
+
+	.hero__install::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			120deg,
+			transparent 0%,
+			rgba(255, 255, 255, 0.6) 45%,
+			rgba(255, 255, 255, 0.9) 50%,
+			rgba(255, 255, 255, 0.6) 55%,
+			transparent 100%
+		);
+		transform: translateX(-130%);
+		animation: heroSweep 2.6s linear infinite;
+		mix-blend-mode: screen;
+	}
+
+	.hero__install:hover {
+		border-color: rgba(116, 218, 255, 0.85);
+		box-shadow:
+			0 10px 40px rgba(116, 218, 255, 0.45),
+			inset 0 0 22px rgba(52, 238, 137, 0.3);
+	}
+
+	@keyframes heroPulse {
+		0%,
+		100% {
+			box-shadow:
+				0 8px 32px rgba(116, 218, 255, 0.35),
+				inset 0 0 18px rgba(52, 238, 137, 0.22);
+		}
+		50% {
+			box-shadow:
+				0 12px 44px rgba(116, 218, 255, 0.55),
+				inset 0 0 26px rgba(52, 238, 137, 0.32);
+		}
+	}
+
+	@keyframes heroSweep {
+		0% {
+			transform: translateX(-130%);
+		}
+		60% {
+			transform: translateX(140%);
+		}
+		100% {
+			transform: translateX(140%);
+		}
+	}
+
 	@keyframes fadeInSlide {
 		from {
 			opacity: 0;
@@ -220,18 +343,46 @@
 	}
 
 	/* ---------- Grid ---------- */
-	.grid {
-		display: grid;
-		grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-		gap: 32px;
-		align-items: start;
+	.extensions {
+		grid-area: extensions;
+	}
+
+	.stepper {
+		grid-area: stepper;
+	}
+
+	.workspace__editor {
+		grid-area: editor;
+		min-height: 0;
+		display: flex;
+	}
+
+	.workspace__panel {
+		grid-area: side;
+		min-height: 0;
+		display: flex;
+		min-width: 0;
+	}
+
+	.workspace__panel :global(.right) {
+		flex: 1;
+		min-height: 0;
+		min-width: 0;
+	}
+
+	.workspace__terminal {
+		grid-area: terminal;
+		min-height: 0;
+		display: flex;
+		overflow: auto;
+	}
+
+	.workspace__terminal :global(.stream) {
 		flex: 1;
 	}
 
-	.grid__panel {
-		display: flex;
-		flex-direction: column;
-		gap: 18px;
+	.status {
+		grid-area: status;
 	}
 
 	/* ---------- Footer ---------- */
@@ -268,9 +419,26 @@
 	}
 
 	/* ---------- Responsive ---------- */
-	@media (max-width: 1024px) {
-		.grid {
+	@media (max-width: 900px) {
+		.page {
 			grid-template-columns: 1fr;
+			grid-template-rows:
+				auto
+				auto
+				auto
+				auto
+				minmax(0, 1fr)
+				35vh
+				auto;
+			grid-template-areas:
+				"topbar"
+				"hero"
+				"extensions"
+				"stepper"
+				"editor"
+				"side"
+				"terminal"
+				"status";
 		}
 	}
 
@@ -281,6 +449,16 @@
 
 		.topbar {
 			padding: 12px 14px;
+		}
+
+		.hero__cta {
+			margin-top: 24px;
+		}
+
+		.hero__install {
+			width: 100%;
+			padding: 16px 24px;
+			font-size: 16px;
 		}
 	}
 </style>

@@ -28,20 +28,22 @@
 		<button class="copy-btn" type="button" on:click={copy} disabled={!enabled}>Copy diff</button>
 	</header>
 
-	{#if !enabled}
-		<p class="placeholder">Patch preview unlocks after agent responds.</p>
-	{:else}
-		<section class="content">
-			<h3>Rationale</h3>
-			<ul class="reasons">
-				{#each patch.rationale as reason}
-					<li>{reason}</li>
-				{/each}
-			</ul>
-			<h3>Diff</h3>
-			<pre class="diff">{patch.diff}</pre>
-		</section>
-	{/if}
+	<div class="panel__body">
+		{#if !enabled}
+			<p class="placeholder">Patch preview unlocks after agent responds.</p>
+		{:else}
+			<div class="content">
+				<h3>Rationale</h3>
+				<ul class="reasons">
+					{#each patch.rationale as reason}
+						<li>{reason}</li>
+					{/each}
+				</ul>
+				<h3>Diff</h3>
+				<pre class="diff">{patch.diff}</pre>
+			</div>
+		{/if}
+	</div>
 </section>
 
 <style>
@@ -50,9 +52,10 @@
 		border-radius: 12px;
 		background: rgba(10, 14, 19, 0.9);
 		padding: 14px;
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		grid-template-rows: auto 1fr;
 		gap: 12px;
+		min-height: 0;
 	}
 
 	.panel__header {
@@ -73,6 +76,12 @@
 		margin: 4px 0 0;
 		font-size: 12px;
 		color: var(--muted);
+	}
+
+	.panel__body {
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.copy-btn {
@@ -101,6 +110,10 @@
 		color: var(--muted);
 		border: 1px dashed var(--border);
 		border-radius: 10px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex: 1;
 	}
 
 	.content {
@@ -108,6 +121,9 @@
 		flex-direction: column;
 		gap: 10px;
 		font-size: 13px;
+		min-height: 0;
+		overflow: auto;
+		padding-right: 4px;
 	}
 
 	h3 {
@@ -133,7 +149,9 @@
 		padding: 14px;
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 12px;
-		max-height: 220px;
-		overflow: auto;
+		white-space: pre;
+		word-break: keep-all;
+		overflow-x: auto;
+		overflow-y: auto;
 	}
 </style>

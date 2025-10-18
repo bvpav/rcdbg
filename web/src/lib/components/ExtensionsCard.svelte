@@ -4,24 +4,21 @@
 </script>
 
 <section class="ext-card" aria-labelledby="ext-title">
-	<div class="icon" aria-hidden="true">AD</div>
+	<div class="icon" aria-hidden="true">RC</div>
 	<div class="meta">
-		<h2 id="ext-title">Agent Debugger</h2>
-		<p class="publisher">Agent Debugger Team</p>
+		<h2 id="ext-title">RealityCheck</h2>
+		<p class="publisher">RealityCheck Team</p>
 		<div class="row">
-			<span class="chip">v0.8.0</span>
+			<span class="chip">v0.0.1</span>
 			<span class="chip">Debugging</span>
 		</div>
 		<div class="row small" aria-hidden="true">
-			<span>★ 4.9</span>
+			<span>★ 5.0</span>
 			<span>·</span>
-			<span>14k installs</span>
+			<span>5 installs</span>
 		</div>
 	</div>
 	<div class="actions">
-		<a class="btn install" href={marketplaceUrl} target="_blank" rel="noopener">
-			Install
-		</a>
 		<a class="btn" href="/quickstart">Details</a>
 	</div>
 </section>
@@ -93,29 +90,23 @@
 		gap: 8px;
 	}
 
-	.btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		padding: 8px 16px;
-		border-radius: 8px;
-		border: 1px solid rgba(28, 34, 43, 0.9);
-		background: rgba(10, 14, 19, 0.9);
-		color: var(--text);
-		font-size: 13px;
-		text-decoration: none;
-		transition: border-color 0.2s ease, box-shadow 0.2s ease;
-	}
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 8px 16px;
+	border-radius: 8px;
+	border: 1px solid rgba(28, 34, 43, 0.9);
+	background: rgba(10, 14, 19, 0.9);
+	color: var(--text);
+	font-size: 13px;
+	text-decoration: none;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
 
 	.btn:hover {
 		border-color: rgba(116, 218, 255, 0.7);
 		box-shadow: 0 0 0 6px var(--ring);
-	}
-
-	.install {
-		background: linear-gradient(135deg, rgba(116, 218, 255, 0.2), rgba(52, 238, 137, 0.2));
-		color: var(--accent-blue);
-		border-color: rgba(116, 218, 255, 0.45);
 	}
 
 	@media (max-width: 640px) {

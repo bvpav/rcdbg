@@ -51,50 +51,15 @@
 		</button>
 	</header>
 
-	{#if !enabled}
-		<p class="placeholder">Prompt becomes available after context is formatted.</p>
-	{:else}
-		<section class="content">
-			<h3>Failure</h3>
-			<p class="failure">
-				<strong>{prompt.failure.message}</strong>
-				<span>{prompt.failure.file}:{prompt.failure.line}</span>
-			</p>
-			<h3>Constraints</h3>
-			<ul class="constraints">
-				{#each prompt.constraints as item}
-					<li>{item}</li>
-				{/each}
-			</ul>
-			<h3>Frames</h3>
-			{#each prompt.frames as frame}
-				<div class="frame">
-					<p class="frame__label">{frame.fn}()</p>
-					<p class="frame__file">{frame.file}:{frame.line}</p>
-					<ul class="frame__locals">
-						{#each frame.locals as local}
-							<li>
-								<span class="name">{local.name}</span>
-								<span class="value">{local.value}</span>
-								<span class="type">{local.type}</span>
-							</li>
-						{/each}
-					</ul>
-				</div>
-			{/each}
-			{#if prompt.repoContext}
-				<h3>Repository snapshot</h3>
-				<ul class="repo">
-					{#each prompt.repoContext.files as file}
-						<li>
-							{file.path}
-							<span>{file.digest}</span>
-						</li>
-					{/each}
-				</ul>
-			{/if}
-		</section>
-	{/if}
+	<div class="panel__body">
+		{#if !enabled}
+			<p class="placeholder">Prompt becomes available after context is formatted.</p>
+		{:else}
+			<div class="content">
+				<pre class="prompt-text">{buildPrompt()}</pre>
+			</div>
+		{/if}
+	</div>
 </section>
 
 <style>
@@ -103,9 +68,10 @@
 		border-radius: 12px;
 		background: rgba(10, 14, 19, 0.9);
 		padding: 14px;
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		grid-template-rows: auto 1fr;
 		gap: 12px;
+		min-height: 0;
 	}
 
 	.panel__header {
@@ -147,6 +113,12 @@
 		cursor: not-allowed;
 	}
 
+	.panel__body {
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+	}
+
 	.placeholder {
 		margin: 0;
 		text-align: center;
@@ -154,121 +126,32 @@
 		color: var(--muted);
 		border: 1px dashed var(--border);
 		border-radius: 10px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex: 1;
 	}
 
 	.content {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
-		font-size: 13px;
+		min-height: 0;
+		overflow: auto;
+		padding-right: 4px;
 	}
 
-	h3 {
-		margin: 12px 0 0;
-		font-size: 12px;
-		color: var(--muted);
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-
-	.content h3:first-child {
-		margin-top: 0;
-	}
-
-	.failure {
-		display: flex;
-		gap: 12px;
-		align-items: center;
-		margin: 4px 0 0;
-	}
-
-	.failure span {
-		font-size: 12px;
-		color: var(--muted);
-	}
-
-	.constraints {
-		list-style: decimal-leading-zero;
-		margin: 6px 0 0 22px;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		color: var(--text);
-	}
-
-	.frame {
-		border: 1px solid var(--border);
+	.prompt-text {
+		margin: 0;
+		background: rgba(5, 8, 12, 0.9);
 		border-radius: 10px;
-		padding: 10px;
-		background: rgba(5, 8, 12, 0.8);
-	}
-
-	.frame__label {
-		margin: 0;
-		font-weight: 600;
+		padding: 12px;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 12px;
+		line-height: 1.6;
 		color: var(--text);
-		font-size: 13px;
-	}
-
-	.frame__file {
-		margin: 4px 0 8px;
-		font-size: 12px;
-		color: var(--muted);
-	}
-
-	.frame__locals {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-
-	.frame__locals li {
-		display: grid;
-		grid-template-columns: 120px 1fr auto;
-		gap: 8px;
-		align-items: baseline;
-		font-size: 12px;
-	}
-
-	.frame__locals .name {
-		color: var(--text);
-		font-weight: 600;
-	}
-
-	.frame__locals .value {
-		color: var(--accent-blue);
-	}
-
-	.frame__locals .type {
-		color: var(--muted);
-		font-size: 11px;
-		text-transform: uppercase;
-	}
-
-	.repo {
-		list-style: none;
-		margin: 6px 0 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		font-size: 12px;
-		color: var(--muted);
-	}
-
-	.repo span {
-		margin-left: 8px;
-		color: var(--muted);
-		font-size: 11px;
-	}
-
-	@media (max-width: 720px) {
-		.frame__locals li {
-			grid-template-columns: 1fr;
-		}
+		white-space: pre;
+		word-break: keep-all;
+		overflow-x: auto;
+		overflow-y: auto;
 	}
 </style>

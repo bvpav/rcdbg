@@ -1,14 +1,12 @@
 <script lang="ts">
-import Stepper, { type Step } from './Stepper.svelte';
-import EventStream, { type LogLine } from './EventStream.svelte';
-import StateInspector from './StateInspector.svelte';
+import { type Step } from './Stepper.svelte';
 import PromptBuilder from './PromptBuilder.svelte';
 import PatchPreview from './PatchPreview.svelte';
-import ExtensionsCard from './ExtensionsCard.svelte';
 import { snapshotsData } from '$data/snapshots';
 import { promptData } from '$data/prompt';
 import patchDiffSource from '$data/patch.diff?raw';
 import type { DebugSnapshot, PatchSuggestion, PromptPayload, Frame } from '$lib/types/demo';
+import type { LogLine } from '$lib/types/logLine';
 import { browser } from '$app/environment';
 import { createEventDispatcher, onDestroy } from 'svelte';
 
@@ -39,6 +37,21 @@ let playbackSpeed = parseFloat(playbackSpeedChoice);
 $: playbackSpeed = parseFloat(playbackSpeedChoice);
 	let showJson = false;
 	let notif: string | null = null;
+	export let streamLines: LogLine[] = [];
+	export let streamSpeed = 1;
+	let showConfetti = false;
+	type ConfettiPiece = {
+		id: number;
+		left: number;
+		delay: number;
+		duration: number;
+		hue: number;
+		drift: number;
+		size: number;
+	};
+let confettiPieces: ConfettiPiece[] = [];
+let completionTimeout: ReturnType<typeof setTimeout> | null = null;
+let confettiTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	const baseDurations = [2500, 3200, 3400, 3600];
 	let timer: ReturnType<typeof setTimeout> | null = null;
@@ -53,6 +66,7 @@ $: playbackSpeed = parseFloat(playbackSpeedChoice);
 		if (!isPlaying) return;
 		if (activeIndex >= steps.length - 1) {
 			isPlaying = false;
+			checkCompletion();
 			return;
 		}
 		const base = baseDurations[activeIndex];
@@ -61,13 +75,17 @@ $: playbackSpeed = parseFloat(playbackSpeedChoice);
 			activeIndex = Math.min(activeIndex + 1, steps.length - 1);
 			if (activeIndex >= steps.length - 1) {
 				isPlaying = false;
+				checkCompletion();
 			}
 		}, adjusted);
 	};
 
 	$: schedule();
 
-	onDestroy(() => resetTimer());
+	onDestroy(() => {
+		resetTimer();
+		cleanupCompletion();
+	});
 
 const dispatch = createEventDispatcher<{
 	state: {
@@ -103,29 +121,45 @@ const logs: LogLine[] = snapshots.map((snapshot) => {
 
 	$: displayedLogs = logs.slice(0, Math.max(1, activeIndex + 1));
 
-	const handlePlayPause = () => {
-		if (activeIndex >= steps.length - 1) {
-			activeIndex = 0;
-		}
-		isPlaying = !isPlaying;
-	};
-
-	const goNext = () => {
-		activeIndex = Math.min(activeIndex + 1, steps.length - 1);
-		isPlaying = false;
-	};
-
-	const goPrev = () => {
-		activeIndex = Math.max(activeIndex - 1, 0);
-		isPlaying = false;
-	};
-
-	const reset = () => {
+const handlePlayPause = () => {
+	if (activeIndex >= steps.length - 1) {
+		stopCelebration();
 		activeIndex = 0;
-		isPlaying = false;
-		showJson = false;
-		notif = null;
-	};
+	}
+	isPlaying = !isPlaying;
+};
+
+const goNext = () => {
+	activeIndex = Math.min(activeIndex + 1, steps.length - 1);
+	isPlaying = false;
+	checkCompletion();
+};
+
+const goPrev = () => {
+	stopCelebration();
+	activeIndex = Math.max(activeIndex - 1, 0);
+	isPlaying = false;
+};
+
+	type ResetOptions = { preserveCelebration?: boolean };
+	const reset = (arg?: ResetOptions | Event) => {
+		const options: ResetOptions =
+			arg instanceof Event || arg === undefined ? {} : (arg as ResetOptions);
+	const { preserveCelebration = false } = options;
+
+	resetTimer();
+	const wasCelebrating = showConfetti;
+	stopCelebration();
+	activeIndex = 0;
+	isPlaying = false;
+	showJson = false;
+	notif = null;
+
+	if (preserveCelebration && wasCelebrating) {
+		confettiPieces = createConfettiPieces();
+		showConfetti = true;
+	}
+};
 
 	const announce = (message: string) => {
 		notif = message;
@@ -136,8 +170,56 @@ const logs: LogLine[] = snapshots.map((snapshot) => {
 		}
 	};
 
-	const copyPrompt = () => announce('Prompt copied to clipboard');
-	const copyDiff = () => announce('Diff copied to clipboard');
+const copyPrompt = () => announce('Prompt copied to clipboard');
+const copyDiff = () => announce('Diff copied to clipboard');
+
+const cleanupCompletion = () => {
+	if (completionTimeout) {
+		clearTimeout(completionTimeout);
+		completionTimeout = null;
+	}
+	if (confettiTimeout) {
+		clearTimeout(confettiTimeout);
+		confettiTimeout = null;
+	}
+};
+
+const stopCelebration = () => {
+	showConfetti = false;
+	confettiPieces = [];
+	cleanupCompletion();
+};
+
+const createConfettiPieces = (count = 120): ConfettiPiece[] =>
+	Array.from({ length: count }, (_, idx) => ({
+		id: idx,
+			left: Math.random() * 100,
+			delay: Math.random() * 0.4,
+			duration: 2.4 + Math.random() * 1.4,
+			hue: Math.floor(Math.random() * 360),
+			drift: Math.random() * 160 - 80,
+			size: 6 + Math.random() * 6
+		}));
+
+const triggerCompletion = () => {
+	if (completionTimeout || showConfetti) return;
+	stopCelebration();
+	completionTimeout = setTimeout(() => {
+		confettiPieces = createConfettiPieces();
+		showConfetti = true;
+		confettiTimeout = setTimeout(() => {
+			showConfetti = false;
+			confettiPieces = [];
+			reset();
+		}, 2500);
+	}, 200);
+};
+
+	const checkCompletion = () => {
+		if (activeIndex >= steps.length - 1) {
+			triggerCompletion();
+		}
+	};
 
 const currentSnapshot = () => snapshots[Math.min(activeIndex, snapshots.length - 1)];
 
@@ -164,6 +246,9 @@ $: {
 	$: fixReady = activeIndex >= 3;
 
 	export { handlePlayPause, goNext, goPrev, reset, playbackSpeedChoice, isPlaying, steps, activeIndex };
+
+$: streamLines = displayedLogs;
+$: streamSpeed = playbackSpeed;
 </script>
 
 <section class="right">
@@ -193,36 +278,37 @@ $: {
 	{/if}
 
 	<div class="panels">
-		<EventStream lines={displayedLogs} speed={playbackSpeed} />
-<!--		<StateInspector-->
-<!--				frames={currentFrames}-->
-<!--				{activeFrameId}-->
-<!--				showJson={showJson}-->
-<!--				onToggleJson={() => (showJson = !showJson)}-->
-<!--		/>-->
-		<PatchPreview patch={patch} enabled={fixReady} onCopy={copyDiff} />
-		<div class="prompt-builder">
+		<div class="panel-item">
 			<PromptBuilder prompt={prompt} enabled={formatReady} onCopy={copyPrompt}/>
 		</div>
+		<div class="panel-item">
+			<PatchPreview patch={patch} enabled={fixReady} onCopy={copyDiff} />
+		</div>
 	</div>
+
+	{#if showConfetti}
+		<div class="confetti" aria-hidden="true">
+			{#each confettiPieces as piece (piece.id)}
+				<span
+					class="confetti__piece"
+					style={`left:${piece.left}%; --size:${piece.size}px; --drift:${piece.drift}px; animation-delay:${piece.delay}s; animation-duration:${piece.duration}s; background-color:hsl(${piece.hue}, 90%, 60%);`}
+				></span>
+			{/each}
+		</div>
+	{/if}
 </section>
 
 <style>
 	.right {
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		grid-template-rows: auto 1fr;
 		gap: 18px;
 		background: rgba(10, 14, 19, 0.92);
 		border: 1px solid var(--border);
 		border-radius: 16px;
 		padding: 20px;
 		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.015);
-	}
-
-	.stepper-wrap {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
+		min-height: 0;
 	}
 
 	.controls {
@@ -271,24 +357,71 @@ $: {
 
 	.panels {
 		display: grid;
-		grid-template-columns: 1fr;
+		grid-template-columns: repeat(2, 1fr);
 		gap: 16px;
+		min-height: 0;
+		align-items: stretch;
 	}
 
-	.panels :global(.prompt-builder) {
-		width: 100%;
-		grid-column: 1 / -1; /* spans all columns when grid is 2-col layout */
+	.panel-item {
+		min-height: 0;
+		min-width: 0;
+		display: flex;
+		overflow: visible;
 	}
 
-	@media (min-width: 1080px) {
+	.panel-item :global(.panel) {
+		flex: 1;
+		min-height: 0;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.confetti {
+		position: fixed;
+		inset: 0;
+		pointer-events: none;
+		overflow: hidden;
+		z-index: 999;
+	}
+
+	.confetti__piece {
+		position: absolute;
+		top: -12vh;
+		width: var(--size, 8px);
+		height: calc(var(--size, 8px) * 2);
+		border-radius: 2px;
+		opacity: 0;
+		animation-name: confetti-fall;
+		animation-timing-function: linear;
+		animation-fill-mode: forwards;
+	}
+
+	@keyframes confetti-fall {
+		0% {
+			transform: translate3d(0, -12vh, 0) rotate(0deg);
+			opacity: 0;
+		}
+		10% {
+			opacity: 1;
+		}
+		100% {
+			transform: translate3d(var(--drift, 0px), 110vh, 0) rotate(720deg);
+			opacity: 0;
+		}
+	}
+
+	@media (max-width: 900px) {
 		.panels {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
+			grid-template-columns: 1fr;
+			grid-auto-rows: minmax(0, 1fr);
 		}
 	}
 
 	@media (max-width: 720px) {
-		.panels {
-			grid-template-columns: 1fr;
+		.right {
+			grid-template-rows: auto auto;
 		}
 	}
 </style>
