@@ -1,5 +1,3 @@
-# Manual workflow to build the site in the GitHub repo
-
 name: Manual Site Build
 
 on:
@@ -18,18 +16,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Cd folder
-        run: cd web
-
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build project
         env:
