@@ -52,6 +52,7 @@ $: playbackSpeed = parseFloat(playbackSpeedChoice);
 let confettiPieces: ConfettiPiece[] = [];
 let completionTimeout: ReturnType<typeof setTimeout> | null = null;
 let confettiTimeout: ReturnType<typeof setTimeout> | null = null;
+let confettiAudio: HTMLAudioElement | null = null;
 
 	const baseDurations = [2500, 3200, 3400, 3600];
 	let timer: ReturnType<typeof setTimeout> | null = null;
@@ -207,6 +208,7 @@ const triggerCompletion = () => {
 	completionTimeout = setTimeout(() => {
 		confettiPieces = createConfettiPieces();
 		showConfetti = true;
+		playCelebrationSound();
 		confettiTimeout = setTimeout(() => {
 			showConfetti = false;
 			confettiPieces = [];
@@ -215,11 +217,26 @@ const triggerCompletion = () => {
 	}, 200);
 };
 
-	const checkCompletion = () => {
-		if (activeIndex >= steps.length - 1) {
-			triggerCompletion();
+const checkCompletion = () => {
+	if (activeIndex >= steps.length - 1) {
+		triggerCompletion();
+	}
+};
+
+const playCelebrationSound = async () => {
+	if (!browser) return;
+	try {
+		if (!confettiAudio) {
+			confettiAudio = new Audio('/confetti.mp3');
+			confettiAudio.preload = 'auto';
+			confettiAudio.volume = 0.65;
 		}
-	};
+		confettiAudio.currentTime = 0;
+		await confettiAudio.play().catch(() => undefined);
+	} catch (error) {
+		console.warn('Unable to play celebration sound', error);
+	}
+};
 
 const currentSnapshot = () => snapshots[Math.min(activeIndex, snapshots.length - 1)];
 
