@@ -9,6 +9,7 @@ import type { DebugSnapshot, PatchSuggestion, PromptPayload, Frame } from '$lib/
 import type { LogLine } from '$lib/types/logLine';
 import { browser } from '$app/environment';
 import { createEventDispatcher, onDestroy } from 'svelte';
+import { base } from '$app/paths';
 
 	const patchDiff = patchDiffSource.trim();
 
@@ -227,7 +228,8 @@ const playCelebrationSound = async () => {
 	if (!browser) return;
 	try {
 		if (!confettiAudio) {
-			confettiAudio = new Audio('/confetti.mp3');
+			const audioSrc = `${base.replace(/\/$/, '')}/confetti.mp3`;
+			confettiAudio = new Audio(audioSrc);
 			confettiAudio.preload = 'auto';
 			confettiAudio.volume = 0.65;
 		}
