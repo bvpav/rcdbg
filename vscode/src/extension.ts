@@ -40,29 +40,30 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      const scopeSnapshots: any[] = [];
+      const stepResults: any[] = [];
 
       for (let i = 0; i < 5; i++) {
         // small delay between steps
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        const scopes = await stepAndGetVariables(
+        const result = await stepAndGetVariables(
           "workbench.action.debug.stepInto",
-          3
+          {
+            maxDepth: 2,
+            excludeUnderscoreProps: true,
+            maxCollectionSize: 20,
+          }
         );
-        scopeSnapshots.push(scopes);
-        const activeStackItem = vscode.debug.activeStackItem;
-        if (activeStackItem && "frameId" in activeStackItem) {
-          vscode.window.showInformationMessage(
-            `Stepped into frame ${activeStackItem.frameId}`
-          );
-        }
+        stepResults.push(result);
+        vscode.window.showInformationMessage(
+          `Stepped into ${result.executionContext.location.function} at line ${result.executionContext.location.line}`
+        );
       }
 
       await stopDebugging(debugSession);
 
-      const scopesJson = JSON.stringify(scopeSnapshots, null, 2);
+      const resultsJson = JSON.stringify(stepResults, null, 2);
       const doc = await vscode.workspace.openTextDocument({
-        content: scopesJson,
+        content: resultsJson,
         language: "json",
       });
       await vscode.window.showTextDocument(doc, { preview: false });
