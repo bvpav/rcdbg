@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { ChatPanelManager } from './chatPanel';
+import { registerFixPythonScriptCommand } from './fixPythonScript';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -32,6 +33,9 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(disposable, openChatCommand, debugSessionStarted);
+	registerFixPythonScriptCommand(context);
+
+	context.subscriptions.push(disposable);
 }
 
 // Global reference for cleanup
