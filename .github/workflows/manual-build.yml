@@ -16,11 +16,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+        
+      - name: File stuff
+        run: cd web && ls
+        
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          cache-dependency-path: ./web/package-lock.json
+          cache-dependency-path: ./package-lock.json
           node-version: 20
           cache: npm
 
