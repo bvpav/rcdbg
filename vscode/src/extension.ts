@@ -2,10 +2,19 @@
 // Import the module and reference it with the alias vscode in your code below
 import invariant from "tiny-invariant";
 import * as vscode from "vscode";
+import {
+  startDebugging,
+  getScopes,
+  stepAndGetVariables,
+  stopDebugging,
+} from "./debugger/api";
+import * as mcp from "./debugger/mcp";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  mcp.listen();
+
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "rcdbg" is now active!');
@@ -23,82 +32,33 @@ export function activate(context: vscode.ExtensionContext) {
   disposable = vscode.commands.registerCommand(
     "rcdbg.fuckWithDebugging",
     async () => {
-      const startedSuccessfully = await vscode.debug.startDebugging(undefined, {
-        type: "debugpy",
-        request: "launch",
-        name: "My RCDBG Session",
-        program: "${file}",
-        stopOnEntry: true,
-      });
-      if (!startedSuccessfully) {
-        vscode.window.showErrorMessage("Failed to start debugging session");
+      let debugSession;
+      try {
+        debugSession = await startDebugging();
+      } catch (e: any) {
+        vscode.window.showErrorMessage(e.message ?? String(e));
         return;
       }
-
-      // Wait a bit for the debugger to start and keep single stepping
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      const debugSession = vscode.debug.activeDebugSession;
-      invariant(
-        debugSession,
-        "Expected to have active debug session, but none found"
-      );
 
       const scopeSnapshots: any[] = [];
 
       for (let i = 0; i < 5; i++) {
+        // small delay between steps
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        await vscode.commands.executeCommand("workbench.action.debug.stepInto");
-
+        const scopes = await stepAndGetVariables(
+          "workbench.action.debug.stepInto",
+          3
+        );
+        scopeSnapshots.push(scopes);
         const activeStackItem = vscode.debug.activeStackItem;
-        invariant(activeStackItem, "Expected to have active stack frame");
-        invariant(
-          "frameId" in activeStackItem,
-          "Expected stack frame, got thread, vscode api sucks x_x"
-        );
-
-        vscode.window.showInformationMessage(
-          `Stepped into frame ${activeStackItem.frameId}`
-        );
-
-        const visited = new Set<number>();
-        const { scopes } = await debugSession.customRequest("scopes", {
-          frameId: activeStackItem.frameId,
-        });
-
-        const maxDepth = 3;
-
-        const resolveChildren = async (o: any, depth: number = 0) => {
-          if (depth >= maxDepth) {
-            return { ...o, note: "Max depth reached" };
-          }
-
-          const { variablesReference, ...rest } = o;
-          if (variablesReference === 0 || visited.has(variablesReference)) {
-            return rest;
-          }
-
-          visited.add(variablesReference);
-
-          console.log(
-            "Resolving children for",
-            o.name,
-            variablesReference,
-            "depth",
-            depth
+        if (activeStackItem && "frameId" in activeStackItem) {
+          vscode.window.showInformationMessage(
+            `Stepped into frame ${activeStackItem.frameId}`
           );
-          const { variables } = await debugSession.customRequest("variables", {
-            variablesReference: o.variablesReference,
-          });
-          return {
-            ...rest,
-            variables: await Promise.all(
-              variables.map((o: any) => resolveChildren(o, depth + 1))
-            ),
-          };
-        };
-        scopeSnapshots.push(await Promise.all(scopes.map(resolveChildren)));
+        }
       }
+
+      await stopDebugging(debugSession);
 
       const scopesJson = JSON.stringify(scopeSnapshots, null, 2);
       const doc = await vscode.workspace.openTextDocument({
@@ -112,4 +72,6 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+  mcp.close();
+}

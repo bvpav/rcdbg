@@ -14,6 +14,9 @@ The project is in early development stages.
 
 - `vscode/` - VS Code extension implementation
   - `src/extension.ts` - Main extension entry point with command registration
+  - `src/debugger/` - Core debugging API module
+    - `api.ts` - High-level debugging API (startDebugging, getScopes, stepAndGetVariables, stopDebugging)
+    - `mcp.ts` - MCP (Model Context Protocol) server exposing debugger API to AI agents via HTTP
   - `package.json` - Extension manifest and dependencies
 - `example/` - Example code for testing the extension (currently contains `main.py`)
 
@@ -44,11 +47,39 @@ pnpm run test
 
 Press F5 in VS Code from the `vscode/` directory to launch the Extension Development Host.
 
-## Extension Commands
+## Architecture
+
+### Debugger API (`src/debugger/api.ts`)
+
+The core debugging functionality is abstracted into reusable functions:
+
+- **`startDebugging()`** - Starts a debugpy session with stopOnEntry enabled, returns the DebugSession
+- **`getScopes(debugSession, frameId, maxDepth)`** - Recursively resolves variables in all scopes for a stack frame up to maxDepth
+- **`stepAndGetVariables(stepCommand, maxDepth)`** - Executes a step command and returns resolved scopes for the new frame
+- **`stopDebugging(debugSession)`** - Stops the debug session
+
+### MCP Server (`src/debugger/mcp.ts`)
+
+An HTTP-based MCP (Model Context Protocol) server for exposing debugging capabilities to AI agents:
+
+- Runs on `http://localhost:2114/mcp`
+- Exposes 5 MCP tools that wrap the debugger API:
+  - **startDebugging** - Start a new debug session on the active file
+  - **getScopes** - Get variable scopes for a specific stack frame
+  - **step** - Step through code (into/over/out) and get variables
+  - **stopDebugging** - Stop the active debug session
+  - **getStackTrace** - Get the current call stack with frame IDs
+- All tools include LLM-optimized descriptions and proper error handling
+- Automatically started when the extension activates
+
+### Extension Commands
 
 The extension currently registers two commands in `package.json`:
 - `rcdbg.helloWorld` - Basic test command
-- `rcdbg.fuckWithDebugging` - Experimental debugging command (vscode/src/extension.ts:22)
+- `rcdbg.fuckWithDebugging` - Main debugging workflow (vscode/src/extension.ts:29)
+  - Starts a debug session on the active file
+  - Steps through 5 iterations, capturing variable scopes at each step
+  - Opens a new document showing the JSON snapshot of all captured scopes
 
 ## Technology Stack
 

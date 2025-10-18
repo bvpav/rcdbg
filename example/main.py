@@ -1,5 +1,7 @@
+import random
+
 def func(x):
-    a = 10
+    a = random.randint(1, 10)
     return x + 1
 
 
