@@ -19,7 +19,7 @@
 		</div>
 	</div>
 	<div class="actions">
-		<a class="btn" href="rcdbg/quickstart">Details</a>
+		<a class="btn" href="/rcdbg/quickstart">Details</a>
 	</div>
 </section>
 
