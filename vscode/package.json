@@ -1,41 +1,129 @@
 {
   "name": "rcdbg",
-  "displayName": "rcdbg",
-  "description": "",
+  "displayName": "Reality Check (100x AI Debugging Efficiency)",
+  "description": "Reality Check keeps your coding agents grounded. Reduces AI debugging costs by 100x using real debugger data instead of feeding entire codebases. Works with Cursor, Windsurf, Claude Code & more.",
   "version": "0.0.1",
+  "publisher": "bvpav",
+  "license": "MIT",
+  "author": {
+    "name": "Reality Check Contributors"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bvpav/rcdbg.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bvpav/rcdbg/issues"
+  },
+  "homepage": "https://github.com/bvpav/rcdbg#readme",
+  "keywords": [
+    "mcp",
+    "debugger",
+    "ai",
+    "agent",
+    "debugging",
+    "model-context-protocol",
+    "ai-assistant",
+    "cursor",
+    "copilot"
+  ],
+  "icon": "icon.png",
   "engines": {
-    "vscode": "^1.103.0"
+    "vscode": "^1.99.0"
   },
   "categories": [
-    "Other"
+    "Debuggers",
+    "Testing"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "rcdbg.helloWorld",
-        "title": "Hello World"
+        "command": "rcdbg.enableMcp",
+        "title": "Enable MCP Server",
+        "category": "Reality Check"
+      },
+      {
+        "command": "rcdbg.disableMcp",
+        "title": "Disable MCP Server",
+        "category": "Reality Check"
+      },
+      {
+        "command": "rcdbg.testMcpConnection",
+        "title": "Test MCP Connection",
+        "category": "Reality Check"
+      },
+      {
+        "command": "rcdbg.startMcpServer",
+        "title": "Start MCP Server",
+        "category": "Reality Check"
+      },
+      {
+        "command": "rcdbg.stopMcpServer",
+        "title": "Stop MCP Server",
+        "category": "Reality Check"
+      },
+      {
+        "command": "rcdbg.cleanupMcp",
+        "title": "Cleanup Configuration",
+        "category": "Reality Check"
+      },
+      {
+        "command": "rcdbg.runDebuggingSession",
+        "title": "Run Debugging Session",
+        "category": "Reality Check"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Reality Check",
+      "properties": {
+        "rcdbg.mcp.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the Reality Check MCP server for AI agent integration"
+        },
+        "rcdbg.mcp.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start the Reality Check MCP server when VS Code starts"
+        },
+        "rcdbg.mcp.port": {
+          "type": "number",
+          "default": 2114,
+          "description": "Port for the Reality Check MCP server to listen on"
+        }
+      }
+    }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run compile",
+    "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "pnpm run compile && pnpm run lint",
+    "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "package": "vsce package"
   },
   "devDependencies": {
-    "@types/vscode": "^1.105.0",
+    "@types/express": "^5.0.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
+    "@types/vscode": "^1.99.0",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
-    "eslint": "^9.36.0",
-    "typescript": "^5.9.3",
     "@vscode/test-cli": "^0.0.11",
-    "@vscode/test-electron": "^2.5.2"
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.6.2",
+    "eslint": "^9.36.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.1",
+    "express": "^4.21.2",
+    "tiny-invariant": "^1.3.3",
+    "zod": "^3.25.76"
   }
 }
