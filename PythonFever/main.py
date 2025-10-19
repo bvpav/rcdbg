@@ -93,7 +93,7 @@ def render_summaries(args: argparse.Namespace, summaries: List[DaySummary]) -> N
     for summary in summaries[:limit]:
         print(render_detailed(summary) if args.detailed else render(summary))
         alerts = []
-        if rain_alert(summary, threshold_mm=args.threshold, tolerance=args.threshold_tolerance):
+        if rain_alert(summary, threshold_mm=args.threshold):
             alerts.append("rain")
         if temperature_alert(
             summary,
@@ -227,7 +227,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--noise-seed", type=int, help="Optional RNG seed for noise")
 
     parser.add_argument("--threshold", type=float, default=10.0, help="Rain alert threshold")
-    parser.add_argument("--threshold-tolerance", type=float, default=1e-6, help="Tolerance for rain alert comparisons")
     parser.add_argument("--temp-low", type=float, help="Low temperature alert threshold")
     parser.add_argument("--temp-high", type=float, help="High temperature alert threshold")
     parser.add_argument(

@@ -4,9 +4,9 @@ from aggregator import DaySummary, MonthSummary, RainEvent
 from analytics import DrySpell, classify_day_severity
 
 
-def rain_alert(summary: DaySummary, threshold_mm: float = 10.0, tolerance: float = 1e-6) -> bool:
-    """Trigger when rainfall crosses the threshold within numeric tolerance."""
-    return summary.total_rain_mm + tolerance >= threshold_mm
+def rain_alert(summary: DaySummary, threshold_mm: float = 10.0) -> bool:
+    """Trigger when rainfall crosses the threshold"""
+    return summary.total_rain_mm >= threshold_mm
 
 
 def temperature_alert(
