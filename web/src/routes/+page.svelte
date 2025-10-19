@@ -80,7 +80,7 @@
 		<div class="hero__cta">
 			<a
 				class="hero__install"
-				href="https://marketplace.visualstudio.com/items?itemName=agent-debugger.extension"
+				href="https://github.com/bvpav/rcdbg"
 				target="_blank"
 				rel="noopener"
 			>
