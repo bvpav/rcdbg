@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**RCDBG** enables AI agents to debug code using a real debugger, giving them new superpowers in the programming feedback loop.
+**Reality Check** (rcdbg) enables AI agents to debug code using a real debugger, giving them new superpowers in the programming feedback loop.
 
-Agentic programming is here to stay, but it's a long way from perfect. AI code editors like Cursor, GitHub Copilot, and Windsurf treat source code like text, but we can get better results if we teach AI agents to treat code like a structure. RCDBG is a VS Code extension that bridges this gap by allowing AI agents to use actual debugging capabilities rather than just static code analysis.
+Agentic programming is here to stay, but it's a long way from perfect. AI code editors like Cursor, GitHub Copilot, and Windsurf treat source code like text, but we can get better results if we teach AI agents to treat code like a structure. Reality Check is a VS Code extension that bridges this gap by allowing AI agents to use actual debugging capabilities rather than just static code analysis.
 
 The project is in early development stages.
 
@@ -28,19 +28,19 @@ All commands should be run from the `vscode/` directory.
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
 # Compile TypeScript
-pnpm run compile
+npm run compile
 
 # Watch mode for development
-pnpm run watch
+npm run watch
 
 # Run linter
-pnpm run lint
+npm run lint
 
 # Run tests
-pnpm run test
+npm run test
 ```
 
 ### Testing the Extension
@@ -86,7 +86,7 @@ The extension currently registers two commands in `package.json`:
 - TypeScript (strict mode enabled)
 - Node 16 module system
 - VS Code Extension API 1.103.0+
-- pnpm for package management
+- npm for package management
 
 ## Git Workflow
 
