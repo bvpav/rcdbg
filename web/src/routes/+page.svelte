@@ -80,7 +80,7 @@
 		<div class="hero__cta">
 			<a
 				class="hero__install"
-				href="https://github.com/bvpav/rcdbg"
+				href="https://marketplace.visualstudio.com/items?itemName=bvpav.rcdbg"
 				target="_blank"
 				rel="noopener"
 			>
