@@ -405,6 +405,16 @@ server.registerTool(
 const app = express();
 app.use(express.json());
 
+// Health endpoint for connection testing
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    version: "1.0.0",
+    server: "RCDBG MCP Server",
+    uptime: process.uptime(),
+  });
+});
+
 app.post("/mcp", async (req, res) => {
   // Create a new transport for each request to prevent request ID collisions
   const transport = new StreamableHTTPServerTransport({
@@ -420,25 +430,40 @@ app.post("/mcp", async (req, res) => {
   await transport.handleRequest(req, res, req.body);
 });
 
-let isRunning = false;
+let serverInstance: any = null;
+let currentPort = 2114;
 
-const port = 2114;
-export function listen() {
-  if (isRunning) {
+export function listen(port?: number) {
+  if (serverInstance) {
+    console.log("MCP server is already running");
     return;
   }
 
-  isRunning = true;
-  app
-    .listen(port, () => {
-      console.log(`RCDBG MCP Server running on http://localhost:${port}/mcp`);
+  currentPort = port || 2114;
+
+  serverInstance = app
+    .listen(currentPort, () => {
+      console.log(`RCDBG MCP Server running on http://localhost:${currentPort}/mcp`);
     })
     .on("error", (error: any) => {
       console.error("Server error:", error);
-      process.exit(1);
+      serverInstance = null;
+      throw error;
     });
 }
 
 export async function close() {
+  if (serverInstance) {
+    serverInstance.close();
+    serverInstance = null;
+  }
   await server.close();
+}
+
+export function isRunning(): boolean {
+  return serverInstance !== null;
+}
+
+export function getPort(): number {
+  return currentPort;
 }
